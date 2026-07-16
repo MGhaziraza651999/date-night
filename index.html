@@ -44,9 +44,9 @@
   }
   @keyframes floatUp {
     0%   { transform: translateY(0) rotate(0deg) scale(1); opacity: 0; }
-    10%  { opacity: .55; }
-    90%  { opacity: .35; }
-    100% { transform: translateY(-115vh) rotate(28deg) scale(1.25); opacity: 0; }
+    10%  { opacity: .22; }
+    90%  { opacity: .12; }
+    100% { transform: translateY(-115vh) rotate(28deg) scale(1.15); opacity: 0; }
   }
 
   /* ---------- screens ---------- */
@@ -353,15 +353,15 @@
   var EMAIL_ENDPOINT = 'https://formsubmit.co/ajax/m.ghaziraza651999@gmail.com';
 
   /* ================= floating hearts background ================= */
-  var HEARTS = ['💖','💕','💗','🌸','💘','🩷'];
-  for (var i = 0; i < 16; i++) {
+  var HEARTS = ['💗','🤍','🌸'];
+  for (var i = 0; i < 5; i++) {
     var h = document.createElement('div');
     h.className = 'bg-heart';
     h.textContent = HEARTS[i % HEARTS.length];
     h.style.left = (Math.random() * 96) + 'vw';
-    h.style.fontSize = (14 + Math.random() * 22) + 'px';
-    h.style.animationDuration = (9 + Math.random() * 10) + 's';
-    h.style.animationDelay = (-Math.random() * 14) + 's';
+    h.style.fontSize = (11 + Math.random() * 12) + 'px';
+    h.style.animationDuration = (12 + Math.random() * 12) + 's';
+    h.style.animationDelay = (-Math.random() * 18) + 's';
     document.body.appendChild(h);
   }
 
@@ -387,30 +387,43 @@
     'Yes is right there 💖'
   ];
 
+  var lastFlee = 0;
   function flee() {
+    // cooldown so the button finishes its hop before dodging again
+    var now = Date.now();
+    if (now - lastFlee < 220) return;
+    lastFlee = now;
+
     escapes++;
     var pad = 16;
-    var bw = noBtn.offsetWidth, bh = noBtn.offsetHeight;
+    var bw = noBtn.offsetWidth || 100, bh = noBtn.offsetHeight || 54;
     if (!noBtn.classList.contains('fleeing')) {
       var r = noBtn.getBoundingClientRect();
       noBtn.classList.add('fleeing');
+      // IMPORTANT: re-parent to <body> — position:fixed inside the blurred
+      // card is positioned relative to the card, not the viewport, which
+      // used to throw the button off-screen.
+      document.body.appendChild(noBtn);
       noBtn.style.left = r.left + 'px';
       noBtn.style.top = r.top + 'px';
       // force layout so the transition animates from the current spot
       void noBtn.offsetWidth;
     }
-    var maxX = window.innerWidth - bw - pad;
-    var maxY = window.innerHeight - bh - pad;
+    var maxX = Math.max(pad, window.innerWidth - bw - pad);
+    var maxY = Math.max(pad, window.innerHeight - bh - pad);
     var x, y, tries = 0, yr = yesBtn.getBoundingClientRect();
     do {
-      x = pad + Math.random() * Math.max(1, maxX - pad);
-      y = pad + Math.random() * Math.max(1, maxY - pad);
+      x = pad + Math.random() * (maxX - pad);
+      y = pad + Math.random() * (maxY - pad);
       tries++;
     } while (tries < 25 && (
       // keep clear of the Yes button
       x < yr.right + 60 && x + bw > yr.left - 60 &&
       y < yr.bottom + 60 && y + bh > yr.top - 60
     ));
+    // clamp inside the viewport, whatever happens
+    x = Math.min(Math.max(x, pad), maxX);
+    y = Math.min(Math.max(y, pad), maxY);
     noBtn.style.left = x + 'px';
     noBtn.style.top = y + 'px';
 
